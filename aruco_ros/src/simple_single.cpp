@@ -221,6 +221,12 @@ public:
             {
               getTransform(reference_frame, camera_frame, cameraToReference);
             }
+            tf::Quaternion q_rot, q_orig, q_new;
+            q_orig = cameraToReference.getRotation();
+            q_rot.setRPY( M_PI, -M_PI/2, M_PI);
+            q_new = q_rot * q_orig;
+            q_new.normalize();
+            cameraToReference.setRotation(q_new);
 
             transform = static_cast<tf::Transform>(cameraToReference) * static_cast<tf::Transform>(rightToLeft)
                 * transform;
