@@ -74,13 +74,32 @@ tf2::Transform aruco_ros::arucoMarker2Tf2(const aruco::Marker &marker)
   cv::Mat tran64;
   marker.Tvec.convertTo(tran64, CV_64FC1);
 
-  tf2::Matrix3x3 tf_rot(rot.at<double>(0, 0), rot.at<double>(0, 1), rot.at<double>(0, 2), 
-                        rot.at<double>(1, 0), rot.at<double>(1, 1), rot.at<double>(1, 2), 
-                        rot.at<double>(2, 0), rot.at<double>(2, 1), rot.at<double>(2, 2));
+  tf2::Matrix3x3 tf_rot( rot.at<double>(0, 0),  rot.at<double>(0, 1),  rot.at<double>(0, 2), 
+                         rot.at<double>(1, 0),  rot.at<double>(1, 1),  rot.at<double>(1, 2), 
+                         rot.at<double>(2, 0),  rot.at<double>(2, 1),  rot.at<double>(2, 2));
 
-  tf2::Vector3 tf_orig(tran64.at<double>(0, 0), tran64.at<double>(1, 0), tran64.at<double>(2, 0));
+  tf2::Vector3 tf_orig(tran64.at<double>(2, 0), -tran64.at<double>(0, 0), -tran64.at<double>(1, 0));
+  //tf2::Vector3 tf_orig(tran64.at<double>(0, 0), tran64.at<double>(1, 0), tran64.at<double>(2, 0));
 
-  return tf2::Transform(tf_rot, tf_orig);
+  tf2::Transform tf = tf2::Transform(tf_rot, tf_orig);
+
+  /*tf2::Quaternion q_rot, q_orig, q_new;
+  q_orig = tf.getRotation();
+  //tf2::Vector3 q_orig_rpy (q_orig.getAxis());
+  q_rot.setRPY( 0, (M_PI), 0);
+  q_new = q_rot * q_orig;
+  q_new.normalize();
+  tf.setRotation(q_new);*/
+
+  tf2::Quaternion q_rot, q_orig;
+  q_orig = tf.getRotation();
+  tf2::Vector3 q_orig_rpy (q_orig.getAxis());
+  tf2::Vector3 q_rot_rpy (-q_orig_rpy.getZ(), q_orig_rpy.getX(), -q_orig_rpy.getY());
+  q_orig.setRotation(q_rot_rpy, q_orig.getAngle());
+
+  tf.setRotation(q_orig);
+
+  return tf;
 }
 
 

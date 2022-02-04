@@ -223,7 +223,7 @@ public:
             }
             tf::Quaternion q_rot, q_orig, q_new;
             q_orig = cameraToReference.getRotation();
-            q_rot.setRPY( M_PI, -M_PI/2, M_PI);
+            q_rot.setRPY( M_PI, 0, 0);
             q_new = q_rot * q_orig;
             q_new.normalize();
             cameraToReference.setRotation(q_new);
@@ -233,8 +233,12 @@ public:
 
             tf::StampedTransform stampedTransform(transform, curr_stamp, reference_frame, marker_frame);
             br.sendTransform(stampedTransform);
-            geometry_msgs::PoseStamped poseMsg;
+            geometry_msgs::PoseStamped poseMsg, tmp_pose;
             tf::poseTFToMsg(transform, poseMsg.pose);
+            /*tmp_pose = poseMsg;
+            poseMsg.pose.position.x = -tmp_pose.pose.position.z;
+            poseMsg.pose.position.y = tmp_pose.pose.position.x;
+            poseMsg.pose.position.z = tmp_pose.pose.position.y;*/
             poseMsg.header.frame_id = reference_frame;
             poseMsg.header.stamp = curr_stamp;
             pose_pub.publish(poseMsg);
